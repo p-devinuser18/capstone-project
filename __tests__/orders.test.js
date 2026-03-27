@@ -43,6 +43,26 @@ describe('Orders API', () => {
     });
   });
 
+  describe('PUT /api/orders/:orderid', () => {
+    it('should update an existing order', async () => {
+      const res = await request(app)
+        .put('/api/orders/ORD001')
+        .send({ payeename: 'Updated Name', productname: 'Updated Product' });
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty('message', 'Order updated');
+      expect(res.body.order).toHaveProperty('payeename', 'Updated Name');
+      expect(res.body.order).toHaveProperty('productname', 'Updated Product');
+    });
+
+    it('should return 404 when updating a non-existent order', async () => {
+      const res = await request(app)
+        .put('/api/orders/INVALID')
+        .send({ payeename: 'Test' });
+      expect(res.status).toBe(404);
+      expect(res.body).toHaveProperty('message', 'Order not found');
+    });
+  });
+
   describe('DELETE /api/orders/:orderid', () => {
     it('should delete an existing order', async () => {
       const res = await request(app).delete('/api/orders/ORD008');

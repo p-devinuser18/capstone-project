@@ -17,6 +17,19 @@ router.get('/:orderid', (req, res) => {
   res.json(order);
 });
 
+// PUT /api/orders/:orderid - Update a specific order by orderid
+router.put('/:orderid', (req, res) => {
+  const index = orders.findIndex(o => o.orderid === req.params.orderid);
+  if (index === -1) {
+    return res.status(404).json({ message: 'Order not found' });
+  }
+  const { payeename, productname, productid } = req.body;
+  if (payeename !== undefined) orders[index].payeename = payeename;
+  if (productname !== undefined) orders[index].productname = productname;
+  if (productid !== undefined) orders[index].productid = productid;
+  res.json({ message: 'Order updated', order: orders[index] });
+});
+
 // DELETE /api/orders/:orderid - Delete a specific order by orderid
 router.delete('/:orderid', (req, res) => {
   const index = orders.findIndex(o => o.orderid === req.params.orderid);
