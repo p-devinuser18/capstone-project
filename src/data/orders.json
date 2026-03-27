@@ -1,0 +1,7 @@
+[
+  { "id": 1, "product": "Laptop", "quantity": 2, "price": 999.99, "status": "completed" },
+  { "id": 2, "product": "Mouse", "quantity": 5, "price": 29.99, "status": "completed" },
+  { "id": 3, "product": "Keyboard", "quantity": 3, "price": 79.99, "status": "pending" },
+  { "id": 4, "product": "Monitor", "quantity": 1, "price": 499.99, "status": "completed" },
+  { "id": 5, "product": "Headphones", "quantity": 4, "price": 149.99, "status": "pending" }
+]
