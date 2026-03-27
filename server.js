@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 3000;
+const logger = require('./src/utils/logger');
 
 const studentController = require('./students/controller/studentController');
 
@@ -13,5 +14,5 @@ app.get('/', (req, res) => {
 app.use('/students', studentController);
 
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    logger.info(`Server is running on port ${PORT}`);
 });
