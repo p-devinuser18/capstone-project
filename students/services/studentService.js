@@ -56,7 +56,7 @@ const StudentService = {
             }
         }
 
-        if (filteredUpdates.subjects && !Array.isArray(filteredUpdates.subjects)) {
+        if (filteredUpdates.subjects !== undefined && !Array.isArray(filteredUpdates.subjects)) {
             console.log('[StudentService] Validation failed: subjects must be an array');
             throw new Error('Subjects must be an array');
         }
