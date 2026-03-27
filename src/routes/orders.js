@@ -17,6 +17,10 @@ router.post('/', (req, res) => {
     return res.status(400).json({ error: 'Missing required fields: productId, quantity, totalPrice, status' });
   }
 
+  if (typeof quantity !== 'number' || quantity < 1) {
+    return res.status(400).json({ error: 'Quantity must be a number greater than or equal to 1' });
+  }
+
   const validStatuses = ['pending', 'shipped', 'delivered'];
   if (!validStatuses.includes(status)) {
     return res.status(400).json({ error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` });
@@ -44,6 +48,10 @@ router.put('/:id', (req, res) => {
   }
 
   const { productId, quantity, totalPrice, status } = req.body;
+
+  if (quantity != null && (typeof quantity !== 'number' || quantity < 1)) {
+    return res.status(400).json({ error: 'Quantity must be a number greater than or equal to 1' });
+  }
 
   if (status != null) {
     const validStatuses = ['pending', 'shipped', 'delivered'];

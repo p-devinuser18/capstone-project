@@ -65,6 +65,28 @@ describe('POST /api/orders', () => {
     expect(res.statusCode).toBe(400);
     expect(res.body.error).toMatch(/Invalid status/);
   });
+
+  it('should return 400 when quantity is 0', async () => {
+    const res = await request(app).post('/api/orders').send({
+      productId: 1,
+      quantity: 0,
+      totalPrice: 10,
+      status: 'pending'
+    });
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toMatch(/Quantity/);
+  });
+
+  it('should return 400 when quantity is negative', async () => {
+    const res = await request(app).post('/api/orders').send({
+      productId: 1,
+      quantity: -5,
+      totalPrice: 10,
+      status: 'pending'
+    });
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toMatch(/Quantity/);
+  });
 });
 
 describe('PUT /api/orders/:id', () => {
@@ -91,6 +113,22 @@ describe('PUT /api/orders/:id', () => {
       .send({ status: 'cancelled' });
     expect(res.statusCode).toBe(400);
     expect(res.body.error).toMatch(/Invalid status/);
+  });
+
+  it('should return 400 when updating quantity to 0', async () => {
+    const res = await request(app)
+      .put('/api/orders/1')
+      .send({ quantity: 0 });
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toMatch(/Quantity/);
+  });
+
+  it('should return 400 when updating quantity to negative', async () => {
+    const res = await request(app)
+      .put('/api/orders/1')
+      .send({ quantity: -3 });
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toMatch(/Quantity/);
   });
 });
 
