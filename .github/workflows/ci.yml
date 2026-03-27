@@ -1,0 +1,66 @@
+name: Student CRUD CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'students/**'
+      - 'server.js'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'students/**'
+      - 'server.js'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/ci.yml'
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint --if-present
+
+      - name: Run tests
+        run: npm test
+
+      - name: "Security: Dependency Audit"
+        run: npm audit --audit-level=high
+
+      - name: "Security: Secret Scan"
+        run: |
+          echo "Scanning for hardcoded secrets..."
+          MATCHES=$(grep -rEin '(apikey|api_key|password|secret|token)\s*[=:]' \
+            --include='*.js' --include='*.ts' --include='*.json' --include='*.yml' --include='*.yaml' --include='*.env' --include='*.md' \
+            --exclude='package-lock.json' --exclude='.env.example' \
+            --exclude-dir='node_modules' --exclude-dir='.git' \
+            . || true)
+          if [ -n "$MATCHES" ]; then
+            echo "Potential secrets found:"
+            echo "$MATCHES"
+            exit 1
+          fi
+          echo "No secrets detected."
+
+      - name: "Security: License Check"
+        run: npx license-checker --production --failOn 'GPL'
+
+      - name: Run build
+        run: npm run build --if-present
