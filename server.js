@@ -9,12 +9,17 @@ const productRoutes = require('./routes/productRoutes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust first proxy (needed for rate limiting behind reverse proxies)
+app.set('trust proxy', 1);
+
 // Security headers (allow inline scripts for the frontend)
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             ...helmet.contentSecurityPolicy.getDefaultDirectives(),
             'script-src': ["'self'", "'unsafe-inline'"],
+            'connect-src': ["'self'"],
+            'upgrade-insecure-requests': null,
         },
     },
 }));

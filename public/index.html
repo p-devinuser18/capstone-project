@@ -449,7 +449,7 @@
             params.set('page', page);
             params.set('limit', limit);
 
-            return '/api/search?' + params.toString();
+            return window.location.origin + '/api/search?' + params.toString();
         }
 
         async function fetchProducts(page) {
