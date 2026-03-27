@@ -6,9 +6,10 @@ describe('Orders Integration Tests', () => {
   it('should return 200 with all unique product names', async () => {
     const res = await request(app).get('/api/orders');
     expect(res.status).toBe(200);
-    expect(Array.isArray(res.body)).toBe(true);
-    expect(res.body.length).toBeGreaterThan(0);
-    res.body.forEach(item => {
+    expect(res.body).toHaveProperty('statusCode', 200);
+    expect(Array.isArray(res.body.data)).toBe(true);
+    expect(res.body.data.length).toBeGreaterThan(0);
+    res.body.data.forEach(item => {
       expect(typeof item).toBe('string');
     });
   });
@@ -17,10 +18,11 @@ describe('Orders Integration Tests', () => {
   it('should return only the requested order by orderid', async () => {
     const res = await request(app).get('/api/orders/ORD001');
     expect(res.status).toBe(200);
-    expect(res.body).toHaveProperty('orderid', 'ORD001');
-    expect(res.body).toHaveProperty('payeename', 'Alice Johnson');
-    expect(res.body).toHaveProperty('productname', 'Dell Laptop');
-    expect(res.body).toHaveProperty('productid', 'PROD001');
+    expect(res.body).toHaveProperty('statusCode', 200);
+    expect(res.body.data).toHaveProperty('orderid', 'ORD001');
+    expect(res.body.data).toHaveProperty('payeename', 'Alice Johnson');
+    expect(res.body.data).toHaveProperty('productname', 'Dell Laptop');
+    expect(res.body.data).toHaveProperty('productid', 'PROD001');
   });
 
   // Scenario 3: PUT /api/orders/:orderid updates order correctly
@@ -35,6 +37,7 @@ describe('Orders Integration Tests', () => {
       .put('/api/orders/ORD002')
       .send(updateData);
     expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('statusCode', 200);
     expect(res.body).toHaveProperty('message', 'Order updated');
     expect(res.body.order).toHaveProperty('payeename', 'Bob Updated');
     expect(res.body.order).toHaveProperty('productname', 'Updated Mobile');
@@ -45,6 +48,7 @@ describe('Orders Integration Tests', () => {
   it('should return 404 for a non-existent order', async () => {
     const res = await request(app).get('/api/orders/NONEXISTENT');
     expect(res.status).toBe(404);
+    expect(res.body).toHaveProperty('statusCode', 404);
     expect(res.body).toHaveProperty('message', 'Order not found');
   });
 
@@ -52,11 +56,12 @@ describe('Orders Integration Tests', () => {
   it('should return an order with correct shape {orderid, payeename, productname, productid}', async () => {
     const res = await request(app).get('/api/orders/ORD003');
     expect(res.status).toBe(200);
-    expect(res.body).toHaveProperty('orderid');
-    expect(res.body).toHaveProperty('payeename');
-    expect(res.body).toHaveProperty('productname');
-    expect(res.body).toHaveProperty('productid');
-    expect(Object.keys(res.body)).toEqual(
+    expect(res.body).toHaveProperty('statusCode', 200);
+    expect(res.body.data).toHaveProperty('orderid');
+    expect(res.body.data).toHaveProperty('payeename');
+    expect(res.body.data).toHaveProperty('productname');
+    expect(res.body.data).toHaveProperty('productid');
+    expect(Object.keys(res.body.data)).toEqual(
       expect.arrayContaining(['orderid', 'payeename', 'productname', 'productid'])
     );
   });
@@ -71,7 +76,7 @@ describe('Orders Integration Tests', () => {
   it('should return unique product names sorted alphabetically', async () => {
     const res = await request(app).get('/api/orders');
     expect(res.status).toBe(200);
-    const sorted = [...res.body].sort();
-    expect(res.body).toEqual(sorted);
+    const sorted = [...res.body.data].sort();
+    expect(res.body.data).toEqual(sorted);
   });
 });
