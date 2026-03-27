@@ -465,7 +465,7 @@
                 const data = await response.json();
 
                 if (!response.ok) {
-                    content.innerHTML = '<div class="error-state"><p>' + (data.error || 'An error occurred') + '</p></div>';
+                    content.innerHTML = '<div class="error-state"><p>' + escapeHtml(data.error || 'An error occurred') + '</p></div>';
                     return;
                 }
 
