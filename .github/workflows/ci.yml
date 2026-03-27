@@ -1,10 +1,22 @@
-name: CI
+name: Student CRUD CI
 
 on:
   push:
     branches: [main]
+    paths:
+      - 'students/**'
+      - 'server.js'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/ci.yml'
   pull_request:
     branches: [main]
+    paths:
+      - 'students/**'
+      - 'server.js'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/ci.yml'
 
 jobs:
   ci:
