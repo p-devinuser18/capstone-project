@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "name": "Alice Johnson",
+    "email": "alice@example.com",
+    "createdAt": "2024-11-01T08:00:00Z"
+  },
+  {
+    "id": 2,
+    "name": "Bob Smith",
+    "email": "bob@example.com",
+    "createdAt": "2024-12-15T10:30:00Z"
+  },
+  {
+    "id": 3,
+    "name": "Carol Davis",
+    "email": "carol@example.com",
+    "createdAt": "2025-01-20T14:00:00Z"
+  }
+]

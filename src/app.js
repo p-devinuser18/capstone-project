@@ -3,6 +3,7 @@ const app = express();
 
 const productsRouter = require('./routes/products');
 const ordersRouter = require('./routes/orders');
+const usersRouter = require('./routes/users');
 
 app.use(express.json());
 
@@ -12,5 +13,6 @@ app.get('/', (req, res) => {
 
 app.use('/api/products', productsRouter);
 app.use('/api/orders', ordersRouter);
+app.use('/api/users', usersRouter);
 
 module.exports = app;

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { orders, products } = require('../data/store');
+const { orders, products, users } = require('../data/store');
 
 let nextId = Math.max(...orders.map((o) => o.id)) + 1;
 
@@ -9,10 +9,15 @@ router.get('/', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-  const { productId, quantity, totalPrice, status } = req.body;
+  const { userId, productId, quantity, totalPrice, status } = req.body;
 
-  if (productId == null || quantity == null || totalPrice == null || status == null) {
-    return res.status(400).json({ error: 'Missing required fields: productId, quantity, totalPrice, status' });
+  if (userId == null || productId == null || quantity == null || totalPrice == null || status == null) {
+    return res.status(400).json({ error: 'Missing required fields: userId, productId, quantity, totalPrice, status' });
+  }
+
+  const user = users.find((u) => u.id === userId);
+  if (!user) {
+    return res.status(400).json({ error: `User with id ${userId} not found` });
   }
 
   if (typeof quantity !== 'number' || quantity < 1) {
@@ -35,6 +40,7 @@ router.post('/', (req, res) => {
 
   const order = {
     id: nextId++,
+    userId,
     productId,
     quantity,
     totalPrice,
@@ -54,7 +60,7 @@ router.put('/:id', (req, res) => {
     return res.status(404).json({ error: 'Order not found' });
   }
 
-  const { productId, quantity, totalPrice, status } = req.body;
+  const { userId, productId, quantity, totalPrice, status } = req.body;
 
   if (quantity != null && (typeof quantity !== 'number' || quantity < 1)) {
     return res.status(400).json({ error: 'Quantity must be a number greater than or equal to 1' });
@@ -75,6 +81,14 @@ router.put('/:id', (req, res) => {
     }
   }
 
+  if (userId != null) {
+    const user = users.find((u) => u.id === userId);
+    if (!user) {
+      return res.status(400).json({ error: `User with id ${userId} not found` });
+    }
+  }
+
+  if (userId != null) orders[index].userId = userId;
   if (productId != null) orders[index].productId = productId;
   if (quantity != null) orders[index].quantity = quantity;
   if (totalPrice != null) orders[index].totalPrice = totalPrice;

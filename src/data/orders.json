@@ -1,6 +1,7 @@
 [
   {
     "id": 1,
+    "userId": 1,
     "productId": 1,
     "quantity": 2,
     "totalPrice": 1999.98,
@@ -9,6 +10,7 @@
   },
   {
     "id": 2,
+    "userId": 2,
     "productId": 2,
     "quantity": 5,
     "totalPrice": 149.95,
@@ -17,6 +19,7 @@
   },
   {
     "id": 3,
+    "userId": 3,
     "productId": 3,
     "quantity": 1,
     "totalPrice": 59.99,
@@ -25,6 +28,7 @@
   },
   {
     "id": 4,
+    "userId": 1,
     "productId": 1,
     "quantity": 1,
     "totalPrice": 999.99,
@@ -33,6 +37,7 @@
   },
   {
     "id": 5,
+    "userId": 2,
     "productId": 2,
     "quantity": 3,
     "totalPrice": 89.97,

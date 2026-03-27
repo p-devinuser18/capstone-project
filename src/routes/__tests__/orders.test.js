@@ -14,6 +14,7 @@ describe('GET /api/orders', () => {
     const res = await request(app).get('/api/orders');
     res.body.forEach((order) => {
       expect(order).toHaveProperty('id');
+      expect(order).toHaveProperty('userId');
       expect(order).toHaveProperty('productId');
       expect(order).toHaveProperty('quantity');
       expect(order).toHaveProperty('totalPrice');
@@ -34,6 +35,7 @@ describe('GET /api/orders', () => {
 describe('POST /api/orders', () => {
   it('should create a new order and return 201', async () => {
     const newOrder = {
+      userId: 1,
       productId: 3,
       quantity: 2,
       totalPrice: 119.98,
@@ -42,6 +44,7 @@ describe('POST /api/orders', () => {
     const res = await request(app).post('/api/orders').send(newOrder);
     expect(res.statusCode).toBe(201);
     expect(res.body).toHaveProperty('id');
+    expect(res.body.userId).toBe(1);
     expect(res.body.productId).toBe(3);
     expect(res.body.quantity).toBe(2);
     expect(res.body.totalPrice).toBe(119.98);
@@ -57,6 +60,7 @@ describe('POST /api/orders', () => {
 
   it('should return 400 for invalid status', async () => {
     const res = await request(app).post('/api/orders').send({
+      userId: 1,
       productId: 1,
       quantity: 1,
       totalPrice: 10,
@@ -68,6 +72,7 @@ describe('POST /api/orders', () => {
 
   it('should return 400 when quantity is 0', async () => {
     const res = await request(app).post('/api/orders').send({
+      userId: 1,
       productId: 1,
       quantity: 0,
       totalPrice: 10,
@@ -79,6 +84,7 @@ describe('POST /api/orders', () => {
 
   it('should return 400 when quantity is negative', async () => {
     const res = await request(app).post('/api/orders').send({
+      userId: 1,
       productId: 1,
       quantity: -5,
       totalPrice: 10,
@@ -90,6 +96,7 @@ describe('POST /api/orders', () => {
 
   it('should return 400 when order quantity exceeds product stock', async () => {
     const res = await request(app).post('/api/orders').send({
+      userId: 1,
       productId: 1,
       quantity: 999,
       totalPrice: 10,
@@ -101,6 +108,7 @@ describe('POST /api/orders', () => {
 
   it('should return 400 for non-existent productId', async () => {
     const res = await request(app).post('/api/orders').send({
+      userId: 1,
       productId: 999,
       quantity: 1,
       totalPrice: 10,
@@ -108,6 +116,18 @@ describe('POST /api/orders', () => {
     });
     expect(res.statusCode).toBe(400);
     expect(res.body.error).toMatch(/not found/);
+  });
+
+  it('should return 400 for non-existent userId', async () => {
+    const res = await request(app).post('/api/orders').send({
+      userId: 999,
+      productId: 1,
+      quantity: 1,
+      totalPrice: 10,
+      status: 'pending'
+    });
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toMatch(/User.*not found/);
   });
 });
 
@@ -159,6 +179,14 @@ describe('PUT /api/orders/:id', () => {
       .send({ quantity: 999 });
     expect(res.statusCode).toBe(400);
     expect(res.body.error).toMatch(/exceeds available product stock/);
+  });
+
+  it('should return 400 when updating with non-existent userId', async () => {
+    const res = await request(app)
+      .put('/api/orders/1')
+      .send({ userId: 999 });
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toMatch(/User.*not found/);
   });
 });
 
