@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const seedOrders = require('../data/orders.json');
+const products = require('../data/products.json');
 
 const orders = [...seedOrders];
 
@@ -19,6 +20,15 @@ router.post('/', (req, res) => {
 
   if (typeof quantity !== 'number' || quantity < 1) {
     return res.status(400).json({ error: 'Quantity must be a number greater than or equal to 1' });
+  }
+
+  const product = products.find((p) => p.id === productId);
+  if (!product) {
+    return res.status(400).json({ error: `Product with id ${productId} not found` });
+  }
+
+  if (quantity > product.stock) {
+    return res.status(400).json({ error: `Order quantity (${quantity}) exceeds available product stock (${product.stock})` });
   }
 
   const validStatuses = ['pending', 'shipped', 'delivered'];
@@ -51,6 +61,14 @@ router.put('/:id', (req, res) => {
 
   if (quantity != null && (typeof quantity !== 'number' || quantity < 1)) {
     return res.status(400).json({ error: 'Quantity must be a number greater than or equal to 1' });
+  }
+
+  if (quantity != null) {
+    const resolvedProductId = productId != null ? productId : orders[index].productId;
+    const product = products.find((p) => p.id === resolvedProductId);
+    if (product && quantity > product.stock) {
+      return res.status(400).json({ error: `Order quantity (${quantity}) exceeds available product stock (${product.stock})` });
+    }
   }
 
   if (status != null) {

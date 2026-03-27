@@ -87,6 +87,28 @@ describe('POST /api/orders', () => {
     expect(res.statusCode).toBe(400);
     expect(res.body.error).toMatch(/Quantity/);
   });
+
+  it('should return 400 when order quantity exceeds product stock', async () => {
+    const res = await request(app).post('/api/orders').send({
+      productId: 1,
+      quantity: 999,
+      totalPrice: 10,
+      status: 'pending'
+    });
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toMatch(/exceeds available product stock/);
+  });
+
+  it('should return 400 for non-existent productId', async () => {
+    const res = await request(app).post('/api/orders').send({
+      productId: 999,
+      quantity: 1,
+      totalPrice: 10,
+      status: 'pending'
+    });
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toMatch(/not found/);
+  });
 });
 
 describe('PUT /api/orders/:id', () => {
@@ -129,6 +151,14 @@ describe('PUT /api/orders/:id', () => {
       .send({ quantity: -3 });
     expect(res.statusCode).toBe(400);
     expect(res.body.error).toMatch(/Quantity/);
+  });
+
+  it('should return 400 when updating quantity beyond product stock', async () => {
+    const res = await request(app)
+      .put('/api/orders/1')
+      .send({ quantity: 999 });
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toMatch(/exceeds available product stock/);
   });
 });
 
