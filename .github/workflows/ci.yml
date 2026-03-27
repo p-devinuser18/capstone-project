@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [p_devinuser4-main]
+  pull_request:
+    branches: [p_devinuser4-main]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint --if-present
+
+      - name: Run tests
+        run: npm test
+
+      - name: Run build
+        run: npm run build --if-present
