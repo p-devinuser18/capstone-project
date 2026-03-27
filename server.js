@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const helmet = require('helmet');
 const cors = require('cors');
 const compression = require('compression');
@@ -8,8 +9,20 @@ const productRoutes = require('./routes/productRoutes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Security headers
-app.use(helmet());
+// Trust first proxy (needed for rate limiting behind reverse proxies)
+app.set('trust proxy', 1);
+
+// Security headers (allow inline scripts for the frontend)
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+            'script-src': ["'self'", "'unsafe-inline'"],
+            'connect-src': ["'self'"],
+            'upgrade-insecure-requests': null,
+        },
+    },
+}));
 
 // CORS configuration
 app.use(cors());
@@ -27,17 +40,11 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
+// Serve static frontend files
+app.use(express.static(path.join(__dirname, 'public')));
+
 // JSON body parser
 app.use(express.json({ limit: '100kb' }));
-
-/**
- * Root endpoint
- * @route GET /
- * @returns {object} Welcome message
- */
-app.get('/', (req, res) => {
-    res.json({ message: 'Welcome to the Express server' });
-});
 
 // Product routes
 app.use('/api', productRoutes);

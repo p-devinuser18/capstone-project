@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Catalog</title>
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+            background: #f0f2f5;
+            color: #1a1a2e;
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        header p {
+            font-size: 0.95rem;
+            opacity: 0.85;
+            margin-top: 0.3rem;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        /* Search & Filters */
+        .search-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+            margin-bottom: 1.5rem;
+        }
+
+        .search-row {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .search-row input[type="text"] {
+            flex: 1;
+            padding: 0.7rem 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .search-row input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn-search {
+            padding: 0.7rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+            white-space: nowrap;
+        }
+
+        .btn-search:hover {
+            opacity: 0.9;
+        }
+
+        .btn-search:active {
+            transform: scale(0.97);
+        }
+
+        .filters {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .filter-group label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-group select,
+        .filter-group input[type="number"] {
+            padding: 0.55rem 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background: white;
+            transition: border-color 0.2s;
+            min-width: 130px;
+        }
+
+        .filter-group select:focus,
+        .filter-group input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn-clear {
+            padding: 0.55rem 1rem;
+            background: #f0f0f0;
+            color: #555;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-clear:hover {
+            background: #e0e0e0;
+        }
+
+        /* Results Info */
+        .results-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 0 0.25rem;
+        }
+
+        .results-info .total {
+            font-size: 0.95rem;
+            color: #666;
+        }
+
+        .results-info .total strong {
+            color: #1a1a2e;
+        }
+
+        .results-info .page-info {
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        /* Product Grid */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.25rem;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+        }
+
+        .product-card .product-id {
+            font-size: 0.75rem;
+            color: #aaa;
+            margin-bottom: 0.25rem;
+        }
+
+        .product-card .product-name {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 0.5rem;
+        }
+
+        .product-card .product-category {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            background: #f0f0ff;
+            color: #667eea;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .product-card .product-price {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #2d8f5e;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #999;
+        }
+
+        .empty-state .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .empty-state p {
+            font-size: 1.1rem;
+        }
+
+        /* Error State */
+        .error-state {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: #e74c3c;
+            background: #fdf0ef;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+
+        .error-state p {
+            font-size: 1rem;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #667eea;
+        }
+
+        .loading .spinner {
+            width: 36px;
+            height: 36px;
+            border: 3px solid #e0e0ff;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-page {
+            padding: 0.5rem 1rem;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .btn-page:hover:not(:disabled) {
+            background: #f0f0ff;
+            border-color: #667eea;
+        }
+
+        .btn-page:disabled {
+            opacity: 0.4;
+            cursor: default;
+        }
+
+        .page-numbers {
+            display: flex;
+            gap: 0.3rem;
+        }
+
+        .page-num {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            background: white;
+            transition: all 0.2s;
+        }
+
+        .page-num:hover {
+            background: #f0f0ff;
+            border-color: #667eea;
+        }
+
+        .page-num.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .search-row {
+                flex-direction: column;
+            }
+
+            .filters {
+                flex-direction: column;
+            }
+
+            .filter-group select,
+            .filter-group input[type="number"] {
+                min-width: 100%;
+            }
+
+            .results-info {
+                flex-direction: column;
+                gap: 0.25rem;
+                text-align: center;
+            }
+
+            .product-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Product Catalog</h1>
+        <p>Search and browse our product collection</p>
+    </header>
+
+    <div class="container">
+        <div class="search-panel">
+            <div class="search-row">
+                <input type="text" id="searchInput" placeholder="Search products by name..." />
+                <button class="btn-search" id="searchBtn">Search</button>
+            </div>
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Category</label>
+                    <select id="categoryFilter">
+                        <option value="">All Categories</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Clothing">Clothing</option>
+                        <option value="Books">Books</option>
+                        <option value="Kitchen">Kitchen</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Min Price</label>
+                    <input type="number" id="minPrice" placeholder="0.00" min="0" step="0.01" />
+                </div>
+                <div class="filter-group">
+                    <label>Max Price</label>
+                    <input type="number" id="maxPrice" placeholder="999.99" min="0" step="0.01" />
+                </div>
+                <div class="filter-group">
+                    <label>Per Page</label>
+                    <select id="limitFilter">
+                        <option value="6">6</option>
+                        <option value="12">12</option>
+                        <option value="20" selected>20</option>
+                        <option value="50">50</option>
+                    </select>
+                </div>
+                <button class="btn-clear" id="clearBtn">Clear Filters</button>
+            </div>
+        </div>
+
+        <div id="resultsInfo" class="results-info" style="display:none;">
+            <div class="total">Showing <strong id="showingCount">0</strong> of <strong id="totalCount">0</strong> products</div>
+            <div class="page-info" id="pageInfo"></div>
+        </div>
+
+        <div id="content">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Loading products...</p>
+            </div>
+        </div>
+
+        <div id="pagination" class="pagination" style="display:none;"></div>
+    </div>
+
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const categoryFilter = document.getElementById('categoryFilter');
+        const minPriceInput = document.getElementById('minPrice');
+        const maxPriceInput = document.getElementById('maxPrice');
+        const limitFilter = document.getElementById('limitFilter');
+        const clearBtn = document.getElementById('clearBtn');
+        const content = document.getElementById('content');
+        const resultsInfo = document.getElementById('resultsInfo');
+        const showingCount = document.getElementById('showingCount');
+        const totalCount = document.getElementById('totalCount');
+        const pageInfo = document.getElementById('pageInfo');
+        const pagination = document.getElementById('pagination');
+
+        let currentPage = 1;
+
+        function buildUrl(page) {
+            const params = new URLSearchParams();
+            const q = searchInput.value.trim();
+            const category = categoryFilter.value;
+            const minPrice = minPriceInput.value;
+            const maxPrice = maxPriceInput.value;
+            const limit = limitFilter.value;
+
+            if (q) params.set('q', q);
+            if (category) params.set('category', category);
+            if (minPrice) params.set('minPrice', minPrice);
+            if (maxPrice) params.set('maxPrice', maxPrice);
+            params.set('page', page);
+            params.set('limit', limit);
+
+            return window.location.origin + '/api/search?' + params.toString();
+        }
+
+        async function fetchProducts(page) {
+            currentPage = page || 1;
+            const url = buildUrl(currentPage);
+
+            content.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading products...</p></div>';
+            resultsInfo.style.display = 'none';
+            pagination.style.display = 'none';
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    content.innerHTML = '<div class="error-state"><p>' + escapeHtml(data.error || 'An error occurred') + '</p></div>';
+                    return;
+                }
+
+                const results = data.results;
+                const products = results.productsList;
+
+                totalCount.textContent = results.total;
+                showingCount.textContent = products.length;
+                pageInfo.textContent = 'Page ' + results.page + ' of ' + results.totalPages;
+                resultsInfo.style.display = 'flex';
+
+                if (products.length === 0) {
+                    content.innerHTML = '<div class="empty-state"><div class="empty-icon">&#128270;</div><p>No products found matching your criteria</p></div>';
+                    return;
+                }
+
+                let html = '<div class="product-grid">';
+                products.forEach(function(item) {
+                    const p = item.product;
+                    html += '<div class="product-card">';
+                    html += '<div class="product-id">#' + p.id + '</div>';
+                    html += '<div class="product-name">' + escapeHtml(p.name) + '</div>';
+                    html += '<div class="product-category">' + escapeHtml(p.category) + '</div>';
+                    html += '<div class="product-price">$' + p.price.toFixed(2) + '</div>';
+                    html += '</div>';
+                });
+                html += '</div>';
+                content.innerHTML = html;
+
+                renderPagination(results.page, results.totalPages);
+            } catch (err) {
+                content.innerHTML = '<div class="error-state"><p>Failed to fetch products. Is the server running?</p></div>';
+            }
+        }
+
+        function renderPagination(page, totalPages) {
+            if (totalPages <= 1) {
+                pagination.style.display = 'none';
+                return;
+            }
+
+            let html = '';
+            html += '<button class="btn-page" id="prevBtn" ' + (page <= 1 ? 'disabled' : '') + '>Previous</button>';
+            html += '<div class="page-numbers">';
+
+            var startPage = Math.max(1, page - 2);
+            var endPage = Math.min(totalPages, page + 2);
+
+            if (startPage > 1) {
+                html += '<button class="page-num" data-page="1">1</button>';
+                if (startPage > 2) html += '<span style="align-self:center;color:#999;">...</span>';
+            }
+
+            for (var i = startPage; i <= endPage; i++) {
+                html += '<button class="page-num' + (i === page ? ' active' : '') + '" data-page="' + i + '">' + i + '</button>';
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) html += '<span style="align-self:center;color:#999;">...</span>';
+                html += '<button class="page-num" data-page="' + totalPages + '">' + totalPages + '</button>';
+            }
+
+            html += '</div>';
+            html += '<button class="btn-page" id="nextBtn" ' + (page >= totalPages ? 'disabled' : '') + '>Next</button>';
+
+            pagination.innerHTML = html;
+            pagination.style.display = 'flex';
+
+            document.getElementById('prevBtn').addEventListener('click', function() {
+                fetchProducts(currentPage - 1);
+            });
+            document.getElementById('nextBtn').addEventListener('click', function() {
+                fetchProducts(currentPage + 1);
+            });
+            document.querySelectorAll('.page-num').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    fetchProducts(parseInt(this.dataset.page));
+                });
+            });
+        }
+
+        function escapeHtml(text) {
+            var div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Event listeners
+        searchBtn.addEventListener('click', function() {
+            fetchProducts(1);
+        });
+
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') fetchProducts(1);
+        });
+
+        categoryFilter.addEventListener('change', function() {
+            fetchProducts(1);
+        });
+
+        limitFilter.addEventListener('change', function() {
+            fetchProducts(1);
+        });
+
+        clearBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            categoryFilter.value = '';
+            minPriceInput.value = '';
+            maxPriceInput.value = '';
+            limitFilter.value = '20';
+            fetchProducts(1);
+        });
+
+        // Load all products on page load
+        fetchProducts(1);
+    </script>
+</body>
+</html>
