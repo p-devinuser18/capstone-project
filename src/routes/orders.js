@@ -1,9 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const seedOrders = require('../data/orders.json');
-const products = require('../data/products.json');
-
-const orders = [...seedOrders];
+const { orders, products } = require('../data/store');
 
 let nextId = Math.max(...orders.map((o) => o.id)) + 1;
 
