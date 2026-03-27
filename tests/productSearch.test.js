@@ -23,9 +23,12 @@ describe('GET /api/search', () => {
             expect(res.body).toHaveProperty('results');
         });
 
-        it('should have total and productsList inside results', async () => {
+        it('should have total, page, limit, totalPages and productsList inside results', async () => {
             const res = await request(app).get('/api/search');
             expect(res.body.results).toHaveProperty('total');
+            expect(res.body.results).toHaveProperty('page');
+            expect(res.body.results).toHaveProperty('limit');
+            expect(res.body.results).toHaveProperty('totalPages');
             expect(res.body.results).toHaveProperty('productsList');
         });
 
@@ -39,9 +42,16 @@ describe('GET /api/search', () => {
             expect(firstItem.product).toHaveProperty('price');
         });
 
-        it('should have total matching productsList length', async () => {
+        it('should have total matching productsList length when not paginated', async () => {
             const res = await request(app).get('/api/search');
             expect(res.body.results.total).toBe(res.body.results.productsList.length);
+        });
+
+        it('should have default pagination values', async () => {
+            const res = await request(app).get('/api/search');
+            expect(res.body.results.page).toBe(1);
+            expect(res.body.results.limit).toBe(20);
+            expect(res.body.results.totalPages).toBe(1);
         });
     });
 
@@ -440,6 +450,124 @@ describe('GET /api/search', () => {
                 expect(typeof item.product.name).toBe('string');
                 expect(typeof item.product.category).toBe('string');
             });
+        });
+    });
+
+    // ==========================================
+    // Input Validation
+    // ==========================================
+
+    describe('Input Validation', () => {
+        it('should return 400 for invalid minPrice', async () => {
+            const res = await request(app).get('/api/search?minPrice=abc');
+            expect(res.statusCode).toBe(400);
+            expect(res.body.error).toBe('minPrice must be a valid number');
+        });
+
+        it('should return 400 for invalid maxPrice', async () => {
+            const res = await request(app).get('/api/search?maxPrice=xyz');
+            expect(res.statusCode).toBe(400);
+            expect(res.body.error).toBe('maxPrice must be a valid number');
+        });
+
+        it('should return 400 for invalid page parameter', async () => {
+            const res = await request(app).get('/api/search?page=abc');
+            expect(res.statusCode).toBe(400);
+            expect(res.body.error).toBe('page must be a positive integer');
+        });
+
+        it('should return 400 for negative page parameter', async () => {
+            const res = await request(app).get('/api/search?page=-1');
+            expect(res.statusCode).toBe(400);
+            expect(res.body.error).toBe('page must be a positive integer');
+        });
+
+        it('should return 400 for zero page parameter', async () => {
+            const res = await request(app).get('/api/search?page=0');
+            expect(res.statusCode).toBe(400);
+            expect(res.body.error).toBe('page must be a positive integer');
+        });
+
+        it('should return 400 for decimal page parameter', async () => {
+            const res = await request(app).get('/api/search?page=1.5');
+            expect(res.statusCode).toBe(400);
+            expect(res.body.error).toBe('page must be a positive integer');
+        });
+
+        it('should return 400 for invalid limit parameter', async () => {
+            const res = await request(app).get('/api/search?limit=abc');
+            expect(res.statusCode).toBe(400);
+            expect(res.body.error).toBe('limit must be a positive integer');
+        });
+
+        it('should return 400 for zero limit parameter', async () => {
+            const res = await request(app).get('/api/search?limit=0');
+            expect(res.statusCode).toBe(400);
+            expect(res.body.error).toBe('limit must be a positive integer');
+        });
+
+        it('should accept valid minPrice as string number', async () => {
+            const res = await request(app).get('/api/search?minPrice=25');
+            expect(res.statusCode).toBe(200);
+        });
+
+        it('should accept empty minPrice (ignored)', async () => {
+            const res = await request(app).get('/api/search?minPrice=');
+            expect(res.statusCode).toBe(200);
+            expect(res.body.results.total).toBe(6);
+        });
+
+        it('should accept empty maxPrice (ignored)', async () => {
+            const res = await request(app).get('/api/search?maxPrice=');
+            expect(res.statusCode).toBe(200);
+            expect(res.body.results.total).toBe(6);
+        });
+    });
+
+    // ==========================================
+    // Pagination
+    // ==========================================
+
+    describe('Pagination', () => {
+        it('should return limited results with limit parameter', async () => {
+            const res = await request(app).get('/api/search?limit=2');
+            expect(res.body.results.productsList).toHaveLength(2);
+            expect(res.body.results.total).toBe(6);
+            expect(res.body.results.totalPages).toBe(3);
+        });
+
+        it('should return second page of results', async () => {
+            const res = await request(app).get('/api/search?page=2&limit=2');
+            expect(res.body.results.productsList).toHaveLength(2);
+            expect(res.body.results.page).toBe(2);
+            expect(res.body.results.productsList[0].product.id).toBe(3);
+            expect(res.body.results.productsList[1].product.id).toBe(4);
+        });
+
+        it('should return last page with remaining results', async () => {
+            const res = await request(app).get('/api/search?page=3&limit=2');
+            expect(res.body.results.productsList).toHaveLength(2);
+            expect(res.body.results.page).toBe(3);
+            expect(res.body.results.productsList[0].product.id).toBe(5);
+            expect(res.body.results.productsList[1].product.id).toBe(6);
+        });
+
+        it('should return empty list for page beyond total pages', async () => {
+            const res = await request(app).get('/api/search?page=10&limit=2');
+            expect(res.body.results.productsList).toHaveLength(0);
+            expect(res.body.results.total).toBe(6);
+        });
+
+        it('should cap limit at 100', async () => {
+            const res = await request(app).get('/api/search?limit=200');
+            expect(res.body.results.limit).toBe(100);
+        });
+
+        it('should combine pagination with filters', async () => {
+            const res = await request(app).get('/api/search?category=electronics&limit=1');
+            expect(res.body.results.total).toBe(2);
+            expect(res.body.results.productsList).toHaveLength(1);
+            expect(res.body.results.totalPages).toBe(2);
         });
     });
 
