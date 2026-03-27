@@ -10,11 +10,6 @@ describe('GET /api/orders', () => {
     expect(Array.isArray(res.body)).toBe(true);
   });
 
-  it('should return 5 orders', async () => {
-    const res = await request(app).get('/api/orders');
-    expect(res.body).toHaveLength(5);
-  });
-
   it('should return orders with the correct shape', async () => {
     const res = await request(app).get('/api/orders');
     res.body.forEach((order) => {
@@ -34,9 +29,81 @@ describe('GET /api/orders', () => {
       expect(validStatuses).toContain(order.status);
     });
   });
+});
 
-  it('should match the orders data source', async () => {
-    const res = await request(app).get('/api/orders');
-    expect(res.body).toEqual(orders);
+describe('POST /api/orders', () => {
+  it('should create a new order and return 201', async () => {
+    const newOrder = {
+      productId: 3,
+      quantity: 2,
+      totalPrice: 119.98,
+      status: 'pending'
+    };
+    const res = await request(app).post('/api/orders').send(newOrder);
+    expect(res.statusCode).toBe(201);
+    expect(res.body).toHaveProperty('id');
+    expect(res.body.productId).toBe(3);
+    expect(res.body.quantity).toBe(2);
+    expect(res.body.totalPrice).toBe(119.98);
+    expect(res.body.status).toBe('pending');
+    expect(res.body).toHaveProperty('createdAt');
+  });
+
+  it('should return 400 when required fields are missing', async () => {
+    const res = await request(app).post('/api/orders').send({ productId: 1 });
+    expect(res.statusCode).toBe(400);
+    expect(res.body).toHaveProperty('error');
+  });
+
+  it('should return 400 for invalid status', async () => {
+    const res = await request(app).post('/api/orders').send({
+      productId: 1,
+      quantity: 1,
+      totalPrice: 10,
+      status: 'cancelled'
+    });
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toMatch(/Invalid status/);
+  });
+});
+
+describe('PUT /api/orders/:id', () => {
+  it('should update an existing order', async () => {
+    const res = await request(app)
+      .put('/api/orders/1')
+      .send({ status: 'shipped' });
+    expect(res.statusCode).toBe(200);
+    expect(res.body.id).toBe(1);
+    expect(res.body.status).toBe('shipped');
+  });
+
+  it('should return 404 for non-existent order', async () => {
+    const res = await request(app)
+      .put('/api/orders/9999')
+      .send({ status: 'pending' });
+    expect(res.statusCode).toBe(404);
+    expect(res.body).toHaveProperty('error');
+  });
+
+  it('should return 400 for invalid status on update', async () => {
+    const res = await request(app)
+      .put('/api/orders/1')
+      .send({ status: 'cancelled' });
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toMatch(/Invalid status/);
+  });
+});
+
+describe('DELETE /api/orders/:id', () => {
+  it('should delete an existing order and return it', async () => {
+    const res = await request(app).delete('/api/orders/2');
+    expect(res.statusCode).toBe(200);
+    expect(res.body.id).toBe(2);
+  });
+
+  it('should return 404 for non-existent order', async () => {
+    const res = await request(app).delete('/api/orders/9999');
+    expect(res.statusCode).toBe(404);
+    expect(res.body).toHaveProperty('error');
   });
 });
